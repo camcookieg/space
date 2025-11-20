@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Camcookie Winter Space - Home  - Camcookie Spaces</title>
-  <link rel="icon" href="https://camcookieg.github.io/space/CWS//CST_LOGO.png" type="image/png">
+  <title>Camcookie Winter Spcae - Home - Camcookie Spaces</title>
+    <link rel="icon" href="https://camcookieg.github.io/space/CWS/CST_LOGO.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: #001f3f;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     /* Splash screen */
@@ -28,16 +27,19 @@
       transition: opacity 1s ease;
     }
     #splash.fade-out { opacity: 0; pointer-events: none; }
+
     #logo {
-      width: 220px; height: 220px;
+      width: 220px;
+      height: 220px;
       background: url('https://camcookieg.github.io/space/CWS/IMG/CST_LOGO.png') no-repeat center center;
       background-size: contain;
     }
 
-    /* Navigation */
+    /* Navigation (top left) */
     .nav {
       position: fixed;
-      top: 20px; left: 20px;
+      top: 20px;
+      left: 20px;
       z-index: 5;
       display: flex;
       gap: 12px;
@@ -45,6 +47,7 @@
       transition: opacity 1s ease;
     }
     .nav.visible { opacity: 1; }
+
     .nav button {
       background: rgba(255,255,255,0.2);
       border: none;
@@ -55,10 +58,11 @@
     }
     .nav svg { width: 24px; height: 24px; fill: #FFDC00; }
 
-    /* Countdown */
+    /* Countdown (top right) */
     #countdown {
       position: fixed;
-      top: 20px; right: 20px;
+      top: 20px;
+      right: 20px;
       z-index: 5;
       background: #FF4136;
       color: white;
@@ -71,43 +75,19 @@
     }
     #countdown.visible { opacity: 1; }
 
-    /* Map */
-    #map { width: 100%; height: 80vh; }
-
-    /* Games section */
-    #games {
-      padding: 40px 20px;
-      background: #001f3f;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
+    /* Game area */
+    #game {
+      width: 100vw;
+      height: 100vh;
     }
-    .game-card {
-      background: #fff;
-      border: 4px solid #FFDC00;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(255,220,0,0.6);
-      width: 220px;
-      text-align: center;
-      padding: 20px;
-      transition: transform 0.2s ease;
-    }
-    .game-card:hover { transform: scale(1.05); }
-    .game-card h3 { margin: 0 0 10px; color: #001f3f; }
-    .game-card button {
-      background: #FF4136;
+    iframe {
+      width: 100%;
+      height: 100%;
       border: none;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
     }
-    .game-card button:hover { background: #FF851B; }
 
-    /* Settings overlay */
-    #settingsOverlay {
+    /* Pause overlay (full-screen red like splash) */
+    #pauseOverlay {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
@@ -119,11 +99,11 @@
       opacity: 0;
       transition: opacity 0.4s ease;
     }
-    #settingsOverlay.visible {
+    #pauseOverlay.visible {
       display: flex;
       opacity: 1;
     }
-    #settingsPanel {
+    #pausePanel {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -131,14 +111,23 @@
       text-align: center;
       color: #fff;
     }
-    #settingsLogo {
-      width: 180px; height: 180px;
-      background: url('https://camcookieg.github.io/space/CWS//IMG/CST_LOGO.png') no-repeat center center;
+    #pauseLogo {
+      width: 180px;
+      height: 180px;
+      background: url('https://camcookieg.github.io/space/CWS/IMG/CST_LOGO.png') no-repeat center center;
       background-size: contain;
+      filter: drop-shadow(0 0 6px rgba(0,0,0,0.3));
     }
-    #settingsTitle { font-size: 2rem; font-weight: 800; }
-    #settingsControls { display: flex; gap: 12px; }
-    #settingsControls button {
+    #pauseTitle {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    #pauseControls {
+      display: flex;
+      gap: 12px;
+    }
+    #pauseControls button {
       background: rgba(255,255,255,0.2);
       border: none;
       color: #fff;
@@ -146,98 +135,105 @@
       border-radius: 10px;
       cursor: pointer;
       backdrop-filter: blur(4px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       font-weight: 600;
     }
+    #pauseControls button.primary {
+      background: #FFDC00;
+      color: #001f3f;
+    }
+    #pauseControls svg { width: 22px; height: 22px; fill: currentColor; }
+    #pauseHint { opacity: 0.8; font-size: 0.9rem; }
+
+    /* Dim and block game when paused */
+    #game.paused iframe { filter: grayscale(40%) brightness(0.6); }
+    #game.paused { pointer-events: none; }
   </style>
 </head>
 <body>
 
-  <!-- Splash -->
+  <!-- Splash screen -->
   <div id="splash"><div id="logo"></div></div>
 
   <!-- Navigation -->
   <div class="nav" id="nav">
+    <button id="homeBtn" title="Home">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </button>
     <button id="muteBtn" title="Mute/Unmute">
       <svg id="muteIcon" viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4l-5 5H4z"/></svg>
     </button>
-    <button id="settingsBtn" title="Settings">
-      <svg id="settingsIcon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    <button id="pauseBtn" title="Pause">
+      <svg id="pauseIcon" viewBox="0 0 24 24">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
     </button>
   </div>
 
   <!-- Countdown -->
   <div id="countdown"></div>
 
-  <!-- Map -->
-  <div id="map"></div>
-
-  <!-- Games -->
-  <div id="games">
-    <div class="game-card">
-      <h3>Present Catch</h3>
-      <button onclick="window.location.href='https://camcookieg.github.io/space/CWS//present-catch/'">Play</button>
-    </div>
-    <div class="game-card">
-      <h3>Game 2</h3>
-      <button onclick="window.location.href='https://camcookieg.github.io/game/gamecode/2/w/'">Play</button>
-    </div>
-    <div class="game-card">
-      <h3>Game 3</h3>
-      <button onclick="window.location.href='https://camcookieg.github.io/game/gamecode/3/w/'">Play</button>
-    </div>
+  <!-- Game iframe -->
+  <div id="game">
+    <iframe id="gameFrame" src="https://camcookieg.github.io/space/CWS/home/" allow="autoplay"></iframe>
   </div>
 
-  <!-- Settings overlay -->
-  <div id="settingsOverlay" aria-hidden="true">
-    <div id="settingsPanel">
-      <div id="settingsLogo"></div>
-      <div id="settingsTitle">Settings</div>
-      <div id="settingsControls">
+  <!-- Pause overlay -->
+  <div id="pauseOverlay" aria-hidden="true">
+    <div id="pausePanel">
+      <div id="pauseLogo"></div>
+      <div id="pauseTitle">Paused</div>
+      <div id="pauseControls">
+        <button id="resumeBtn" class="primary">Resume game</button>
         <button id="musicToggleBtn">
-          <svg id="musicToggleIcon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v9h-2V6.27l-8 1.33V18a3 3 0 11-2-2.83z"/></svg>
+          <svg id="musicToggleIcon" viewBox="0 0 24 24">
+            <path d="M9 18V5l12-2v9h-2V6.27l-8 1.33V18a3 3 0 11-2-2.83z"/>
+          </svg>
           <span id="musicToggleLabel">Pause music</span>
         </button>
-        <button id="nextTrackBtn">Next Track</button>
       </div>
-      <div id="settingsHint">Press Escape to close</div>
     </div>
   </div>
 
-  <!-- Music player -->
+  <!-- Music player (hidden) -->
   <audio id="musicPlayer" preload="auto"></audio>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
+  <script>
     const splash = document.getElementById("splash");
     const nav = document.getElementById("nav");
-    const countdownEl = document.getElementById("countdown");
+    const homeBtn = document.getElementById("homeBtn");
     const muteBtn = document.getElementById("muteBtn");
     const muteIcon = document.getElementById("muteIcon");
-    const settingsBtn = document.getElementById("settingsBtn");
-    const settingsOverlay = document.getElementById("settingsOverlay");
+    const gameFrame = document.getElementById("gameFrame");
+    const countdownEl = document.getElementById("countdown");
     const musicPlayer = document.getElementById("musicPlayer");
+
+    const pauseBtn = document.getElementById("pauseBtn");
+    const pauseOverlay = document.getElementById("pauseOverlay");
+    const resumeBtn = document.getElementById("resumeBtn");
     const musicToggleBtn = document.getElementById("musicToggleBtn");
     const musicToggleIcon = document.getElementById("musicToggleIcon");
     const musicToggleLabel = document.getElementById("musicToggleLabel");
-    const nextTrackBtn = document.getElementById("nextTrackBtn");
 
     // Playlist
     const playlist = [
-      "https://camcookieg.github.io/space/CWS//music/AI-Music-so-1.mp3",
-      "https://camcookieg.github.io/space/CWS//music/AI-Music-so-2.mp3",
-      "https://camcookieg.github.io/space/CWS//music/Brev-AI-1.mp3",
-      "https://camcookieg.github.io/space/CWS//music/Brev-AI-2.mp3"
+      "https://camcookieg.github.io/space/CWS/music/AI-Music-so-1.mp3",
+      "https://camcookieg.github.io/space/CWS/music/AI-Music-so-2.mp3",
+      "https://camcookieg.github.io/space/CWS/music/Brev-AI-1.mp3",
+      "https://camcookieg.github.io/space/CWS/music/Brev-AI-2.mp3"
     ];
 
+    // Restore state
     let currentTrack = parseInt(localStorage.getItem("camcookieTrack") || "0");
     let currentTime = parseFloat(localStorage.getItem("camcookieTime") || "0");
-    let isMutedState = localStorage.getItem("camcookieMuted") === "true";
+    let isMuted = localStorage.getItem("camcookieMuted") === "true";
 
     // Setup player
     musicPlayer.src = playlist[currentTrack];
     musicPlayer.currentTime = currentTime;
-    musicPlayer.muted = isMutedState;
+    musicPlayer.muted = isMuted;
     musicPlayer.play().catch(()=>{});
 
     // Save progress
@@ -255,7 +251,7 @@
       musicPlayer.play().catch(()=>{});
     });
 
-    // Splash fade in
+    // Fade in game after splash
     window.onload = () => {
       setTimeout(() => {
         splash.classList.add("fade-out");
@@ -265,31 +261,92 @@
     };
 
     // Mute toggle
-    function updateMute() {
-      muteIcon.innerHTML = isMutedState
-        ? '<path d="M16.5 12l3.5 3.5-1.5 1.5L15 13.5l-3.5 3.5-1.5-1.5L13.5 12 10 8.5l1.5-1.5L15 10.5l3.5-3.5 1.5 1.5L16.5 12z"/>'
-        : '<path d="M4 9v6h4l5 5V4l-5 5H4z"/>';
-      musicPlayer.muted = isMutedState;
-    }
+    let isMutedState = isMuted;
     muteBtn.onclick = () => {
       isMutedState = !isMutedState;
       localStorage.setItem("camcookieMuted", isMutedState);
       updateMute();
     };
+    function updateMute() {
+      muteIcon.innerHTML = isMutedState
+        ? '<path d="M16.5 12l3.5 3.5-1.5 1.5L15 13.5l-3.5 3.5-1.5-1.5L13.5 12 10 8.5l1.5-1.5L15 10.5l3.5-3.5 1.5 1.5L16.5 12z"/>'
+        : '<path d="M4 9v6h4l5 5V4l-5 5H4z"/>';
+      musicPlayer.muted = isMutedState;
+      // Note: iframe audio cannot be controlled cross-origin; this only affects the musicPlayer
+    }
     updateMute();
 
-    // Settings overlay toggle
-    settingsBtn.onclick = () => {
-      settingsOverlay.classList.add("visible");
-      settingsOverlay.setAttribute("aria-hidden","false");
+    // Home button → splash then redirect
+    homeBtn.onclick = () => {
+      splash.classList.remove("fade-out");
+      nav.classList.remove("visible");
+      countdownEl.classList.remove("visible");
+      setTimeout(() => {
+        window.location.href = "https://camcookieg.github.io/space/CWS/";
+      }, 1500);
     };
+
+    // Countdown logic
+    function updateCountdown() {
+      const now = new Date();
+      const launchTime = new Date("2025-12-24T18:00:00-05:00"); // Santa leaves
+      const diff = launchTime - now;
+
+      if (diff > 0) {
+        const months = Math.floor(diff / (1000*60*60*24*30));
+        const days = Math.floor((diff / (1000*60*60*24)) % 30);
+        const hours = Math.floor((diff / (1000*60*60)) % 24);
+        const minutes = Math.floor((diff / (1000*60)) % 60);
+        countdownEl.textContent = `${months} months ${days} days ${hours} hours ${minutes} minutes`;
+      } else {
+        countdownEl.textContent = "Santa is on his way!";
+      }
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Pause/resume logic
+    let isPaused = false;
+
+    function pauseGame() {
+      if (isPaused) return;
+      isPaused = true;
+      document.getElementById("game").classList.add("paused");
+      pauseOverlay.classList.add("visible");
+      pauseOverlay.setAttribute("aria-hidden", "false");
+
+      // Notify iframe (if it listens)
+      try {
+        gameFrame.contentWindow.postMessage({ type: "CST_PAUSE" }, "*");
+      } catch {}
+    }
+
+    function resumeGame() {
+      if (!isPaused) return;
+      isPaused = false;
+      document.getElementById("game").classList.remove("paused");
+      pauseOverlay.classList.remove("visible");
+      pauseOverlay.setAttribute("aria-hidden", "true");
+
+      try {
+        gameFrame.contentWindow.postMessage({ type: "CST_RESUME" }, "*");
+      } catch {}
+    }
+
+    pauseBtn.onclick = pauseGame;
+    resumeBtn.onclick = resumeGame;
+
+    // Keyboard shortcuts
     window.addEventListener("keydown", (e) => {
-      if (e.code === "Escape") {
-        settingsOverlay.classList.remove("visible");
-        settingsOverlay.setAttribute("aria-hidden","true");
+      if (e.code === "Space") {
+        e.preventDefault();
+        isPaused ? resumeGame() : pauseGame();
+      } else if (e.code === "Escape" && isPaused) {
+        resumeGame();
       }
     });
-    // Music controls
+
+    // Music play/pause in overlay
     function updateMusicToggleVisual() {
       const isPlaying = !musicPlayer.paused;
       if (isPlaying) {
@@ -310,121 +367,9 @@
       updateMusicToggleVisual();
     };
 
-    nextTrackBtn.onclick = () => {
-      currentTrack = (currentTrack + 1) % playlist.length;
-      localStorage.setItem("camcookieTrack", currentTrack);
-      musicPlayer.src = playlist[currentTrack];
-      musicPlayer.currentTime = 0;
-      musicPlayer.play().catch(()=>{});
-    };
-
     musicPlayer.addEventListener("play", updateMusicToggleVisual);
     musicPlayer.addEventListener("pause", updateMusicToggleVisual);
     updateMusicToggleVisual();
-
-    // Countdown logic
-    function updateCountdown() {
-      const now = new Date();
-      const launchTime = new Date("2025-12-24T18:00:00-05:00");
-      const diff = launchTime - now;
-      if (diff > 0) {
-        const months = Math.floor(diff / (1000*60*60*24*30));
-        const days = Math.floor((diff / (1000*60*60*24)) % 30);
-        const hours = Math.floor((diff / (1000*60*60)) % 24);
-        const minutes = Math.floor((diff / (1000*60)) % 60);
-        countdownEl.textContent = `${months} months ${days} days ${hours} hours ${minutes} minutes`;
-      } else {
-        countdownEl.textContent = "Santa is on his way!";
-        startTracker();
-        clearInterval(countdownTimer);
-      }
-    }
-    const countdownTimer = setInterval(updateCountdown, 1000);
-    updateCountdown();
-    // Map setup
-    const map = L.map('map', { center:[20,0], zoom:2, worldCopyJump:true });
-    const bounds = [[-85,-180],[85,180]];
-    map.setMaxBounds(bounds);
-
-    const GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson';
-    fetch(GEOJSON_URL)
-      .then(r => r.json())
-      .then(geojson => {
-        L.geoJSON(geojson, {
-          style: () => ({
-            color: '#808080',
-            weight: 1,
-            opacity: 1,
-            fillColor: '#228B22',
-            fillOpacity: 1
-          })
-        }).addTo(map);
-      });
-
-    // Santa icon
-    const santaIcon = L.icon({
-      iconUrl: 'https://camcookieg.github.io/space/CWS/',
-      iconSize: [64,64], iconAnchor:[32,32]
-    });
-
-    let santaMarker, santaPath;
-    function startTracker() {
-      santaMarker = L.marker([90,0], { icon:santaIcon }).addTo(map);
-      santaPath = L.polyline([], { color:'red', weight:2 }).addTo(map);
-      updateSanta();
-      setInterval(updateSanta, 60000);
-    }
-
-    // Santa route
-    const santaRoute = [
-      { time: "2025-12-24T18:00:00-05:00", lat: 90.0, lng: 0.0, city: "North Pole" },
-      { time: "2025-12-24T19:00:00-05:00", lat: 51.5074, lng: -0.1278, city: "London" },
-      { time: "2025-12-24T20:00:00-05:00", lat: 48.8566, lng: 2.3522, city: "Paris" },
-      { time: "2025-12-24T21:00:00-05:00", lat: 40.7128, lng: -74.0060, city: "New York" },
-      { time: "2025-12-24T22:00:00-05:00", lat: 35.6895, lng: 139.6917, city: "Tokyo" }
-    ];
-    // Update Santa position
-    function updateSanta() {
-      const now = new Date();
-      let currentStop = santaRoute[0];
-      let nextStop = null;
-
-      for (let i=0; i<santaRoute.length; i++) {
-        if (new Date(santaRoute[i].time) <= now) {
-          currentStop = santaRoute[i];
-          nextStop = santaRoute[i+1] || null;
-        }
-      }
-
-      santaMarker.setLatLng([currentStop.lat, currentStop.lng]);
-      santaPath.addLatLng([currentStop.lat, currentStop.lng]);
-
-      let popupText = `Santa is in ${currentStop.city}`;
-      if (nextStop) {
-        popupText += `<br/>Next stop: ${nextStop.city}`;
-      } else {
-        // Show break only if near Bow, NH
-        const userLat = 43.195; // Bow, NH approx
-        const userLng = -71.53;
-        const dist = getDistance(currentStop.lat, currentStop.lng, userLat, userLng);
-        if (dist < 500) {
-          popupText += `<br/>Santa is taking a short break`;
-        }
-      }
-      santaMarker.bindPopup(popupText).openPopup();
-    }
-
-    // Haversine formula for distance (km)
-    function getDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2-lat1) * Math.PI/180;
-      const dLon = (lon2-lon1) * Math.PI/180;
-      const a = Math.sin(dLat/2)**2 +
-                Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) *
-                Math.sin(dLon/2)**2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    }
   </script>
 </body>
 </html>
